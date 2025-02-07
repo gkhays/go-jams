@@ -21,3 +21,15 @@ make release
 ```bash
 docker build -f docker/Dockerfile -t go-jams .
 ```
+
+## Run
+
+```bash
+docker run --rm -it -p 8080:8080 go-jams
+```
+
+Or use the provided shell script, `run.sh`.
+
+```bash
+./run.sh
+```
