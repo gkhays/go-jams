@@ -6,7 +6,8 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"strings"
+
+	"github.com/gkh/fips"
 )
 
 // User represents a user structure for JSON payload
@@ -49,7 +50,7 @@ func getUserHandler(w http.ResponseWriter, r *http.Request) {
 
 // Handler for FIPS mode endpoint
 func getFIPSModeHandler(w http.ResponseWriter, r *http.Request) {
-	fipsMode := isFIPSModeEnabled()
+	fipsMode := fips.IsFIPSModeEnabled()
 
 	logger.Info("FIPS mode",
 		slog.Bool("fips-enabled", fipsMode),
@@ -59,16 +60,6 @@ func getFIPSModeHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(FIPSConfig{FIPSMode: fipsMode})
-}
-
-// Determine if FIPS mode is enabled
-func isFIPSModeEnabled() bool {
-	// Check environment variable
-	fipsEnv := os.Getenv("FIPS_MODE")
-	return strings.ToLower(fipsEnv) == "true"
-
-	// Add additional FIPS mode detection logic if needed
-	// TODO
 }
 
 // Handler for POST endpoint

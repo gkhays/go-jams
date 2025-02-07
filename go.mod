@@ -1,3 +1,3 @@
-module github.com/gkh/fips
+module github.com/gkh
 
 go 1.22.4
