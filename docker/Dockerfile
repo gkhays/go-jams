@@ -4,7 +4,7 @@ RUN microdnf install -y golang
 
 WORKDIR /app
 
-COPY ../bin/server-0.1.0-dev-linux-amd64 /app/server
+COPY bin/server-0.1.0-dev-linux-amd64 /app/server
 
 EXPOSE 8080
 CMD ["/app/server"]

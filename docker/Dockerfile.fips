@@ -4,7 +4,7 @@ RUN microdnf install -y golang openssl-devel
 
 WORKDIR /build
 
-COPY ../bin/server-0.1.0-dev-linux-amd64 /build/server
+COPY bin/server-0.1.0-dev-linux-amd64 /build/server
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3
 

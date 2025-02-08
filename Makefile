@@ -1,4 +1,4 @@
-.PHONY: build install clean test integration dep release
+.PHONY: build install clean test integration dep release docker
 VERSION=`egrep -o '[0-9]+\.[0-9a-z.\-]+' version.go`
 GIT_SHA=`git rev-parse --short HEAD || echo`
 
@@ -25,3 +25,7 @@ release:
 	done
 	@docker run -it --rm -v ${PWD}:/app -e "GOOS=linux" -e "GOARCH=arm64" -e "CGO_ENABLED=0" jams_builder go build -ldflags="-s -w -X main.GitSHA=${GIT_SHA}" -o bin/server-${VERSION}-linux-arm64;
 	@upx bin/server-${VERSION}-*
+
+docker:
+	@docker build -f docker/Dockerfile -t go-jams:${VERSION} .
+	@docker build -f docker/Dockerfile.fips -t go-jams:fips-${VERSION} .
