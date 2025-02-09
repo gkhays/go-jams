@@ -12,20 +12,30 @@ Just another micro service, written in Go.
 - UPX
 - Docker
 
+Create a release build with all targets.
+
 ```bash
 make release
 ```
 
-### Docker
+Produce a Docker container image.
 
 ```bash
-docker build -f docker/Dockerfile -t go-jams .
+make docker
+```
+
+### Docker
+
+To build a Docker container image manually.
+
+```bash
+docker build -f docker/Dockerfile -t go-jams:test .
 ```
 
 ## Run
 
 ```bash
-docker run --rm -it -p 8080:8080 go-jams
+docker run --rm -it -p 8080:8080 go-jams:test
 ```
 
 Or use the provided shell script, `run.sh`.
