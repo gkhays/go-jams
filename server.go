@@ -1,8 +1,9 @@
 package main
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -74,13 +75,13 @@ func createUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Log received user (in real app, you'd save to database)
-	log.Printf("Received user: %+v", user)
+	logger.Error("Received user: %+v", user)
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{"message": "User created successfully"})
 }
 
-func main() {
+func plainTextServer() {
 	logger.Info("Starting server...", slog.String("port", ":8080"))
 
 	// User endpoints
@@ -108,4 +109,78 @@ func main() {
 		logger.Error("REST service failed to start", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
+}
+
+func LoadTLSConfig(certFile, keyFile, caFile string) (*tls.Config, error) {
+	// Load server certificate and private key
+	cert, err := tls.LoadX509KeyPair("jams.com+5.pem", "jams.com+5-key.pem")
+	if err != nil {
+		logger.Error("Failed to load server certificate and key: %v", err)
+	}
+
+	// Load CA certificate to verify client certificates (optional)
+	caCert, err := os.ReadFile("rootCA.pem")
+	if err != nil {
+		logger.Error("Failed to read CA certificate: %v", err)
+	}
+
+	caCertPool := x509.NewCertPool()
+	if !caCertPool.AppendCertsFromPEM(caCert) {
+		logger.Error("Failed to append CA certificate")
+	}
+
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		ClientCAs:    caCertPool,
+		ClientAuth:   tls.RequestClientCert,
+		MinVersion:   tls.VersionTLS12,
+		CipherSuites: []uint16{
+			tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+			tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+			tls.TLS_RSA_WITH_AES_128_GCM_SHA256,
+			tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+		},
+	}
+
+	return tlsConfig, nil
+}
+
+func main() {
+	tlsConfig, err := LoadTLSConfig("jams.com+5.pem", "jams.com+5-key.pem", "rootCA.pem")
+	if err != nil {
+		logger.Error("TLS configuration error: %v, err")
+	}
+
+	server := &http.Server{
+		Addr:      ":8443",
+		TLSConfig: tlsConfig,
+	}
+
+	// FIPS mode endpoint
+	http.HandleFunc("/fips-mode", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		getFIPSModeHandler(w, r)
+	})
+
+	// Handle incoming connections
+	http.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			getUserHandler(w, r)
+		case http.MethodPost:
+			createUserHandler(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	err = server.ListenAndServeTLS("jams.com+5.pem", "jams.com+5-key.pem")
+	if err != nil {
+		logger.Error("TLS configuration error: %v", err)
+	}
+
+	logger.Info("Secure server is listening on port 8443...")
 }
