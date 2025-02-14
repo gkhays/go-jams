@@ -1,0 +1,13 @@
+FROM datadog/fips-proxy:1.1.6 AS builder
+
+WORKDIR /build
+
+ARG VERSION=dev
+ENV VERSION=${VERSION}
+COPY bin/server-fips-${VERSION}-linux-amd64 /build/server
+
+FROM datadog/fips-proxy:1.1.6
+
+COPY --from=builder /build/server /app/server
+EXPOSE 8443
+CMD ["/app/server"]

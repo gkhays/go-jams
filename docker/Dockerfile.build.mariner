@@ -1,0 +1,6 @@
+FROM mcr.microsoft.com/oss/go/microsoft/golang:1.22-fips-cbl-mariner2.0
+
+RUN mkdir -p /go/src/github.com/gkh/go-jams && \
+  ln -s /go/src/github.com/gkh/go-jams /app
+
+WORKDIR /app
