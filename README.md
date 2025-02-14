@@ -11,6 +11,14 @@ Just another micro service, written in Go.
 - GNU make
 - UPX
 - Docker
+- [mkcert](https://github.com/FiloSottile/mkcert)
+
+Create a CA and certificates.
+
+```bash
+mkcert -install
+mkcert jams.com "*.jams.com" jams.test localhost 127.0.0.1 ::1
+```
 
 Create a release build with all targets.
 
