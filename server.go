@@ -75,7 +75,7 @@ func createUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Log received user (in real app, you'd save to database)
-	logger.Error("Received user: %+v", user)
+	logger.Error("Received user: %+v", slog.String("name", user.Name))
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{"message": "User created successfully"})
